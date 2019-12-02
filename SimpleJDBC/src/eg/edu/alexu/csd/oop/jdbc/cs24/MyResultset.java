@@ -24,7 +24,120 @@ import java.util.Map;
 
 public class MyResultset implements ResultSet {
 
+	public boolean absolute(int row) throws SQLException {
 
+		return false;
+	}
+	
+	public boolean next() throws SQLException {
+
+		return false;
+	}
+	
+	public boolean previous() throws SQLException {
+
+		return false;
+	}
+	
+	public String getString(int columnIndex) throws SQLException {
+
+		return null;
+	}
+	
+	public String getString(String columnLabel) throws SQLException {
+
+		return null;
+	}
+	
+	public int getInt(int columnIndex) throws SQLException {
+
+		return 0;
+	}
+	
+	public int getInt(String columnLabel) throws SQLException {
+		
+		return 0;
+	}
+	
+	public ResultSetMetaData getMetaData() throws SQLException {
+
+		return null;
+	}
+
+
+	public Object getObject(int columnIndex) throws SQLException {
+
+		return null;
+	}
+	
+	public int findColumn(String columnLabel) throws SQLException {
+
+		return 0;
+	}
+	
+	public boolean isBeforeFirst() throws SQLException {
+
+		return false;
+	}
+
+
+	public boolean isAfterLast() throws SQLException {
+
+		return false;
+	}
+
+
+	public boolean isFirst() throws SQLException {
+
+		return false;
+	}
+
+
+	public boolean isLast() throws SQLException {
+
+		return false;
+	}
+
+
+	public void beforeFirst() throws SQLException {
+
+
+	}
+	
+	public void afterLast() throws SQLException {
+
+
+	}
+
+
+	public boolean first() throws SQLException {
+
+		return false;
+	}
+
+
+	public boolean last() throws SQLException {
+
+		return false;
+	}
+	
+	public Statement getStatement() throws SQLException {
+
+		return null;
+	}
+	
+	public boolean isClosed() throws SQLException {
+
+		return false;
+	}
+
+	public void close() throws SQLException {
+
+
+	}
+
+//	================================ UNUSED METHODS ================================
+	
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -35,27 +148,10 @@ public class MyResultset implements ResultSet {
 	}
 
 
-	public boolean next() throws SQLException {
-
-		return false;
-	}
-
-
-	public void close() throws SQLException {
-
-
-	}
-
-
 	public boolean wasNull() throws SQLException {
 		throw new UnsupportedOperationException();
 	}
 
-
-	public String getString(int columnIndex) throws SQLException {
-
-		return null;
-	}
 
 
 	public boolean getBoolean(int columnIndex) throws SQLException {
@@ -70,13 +166,7 @@ public class MyResultset implements ResultSet {
 
 	public short getShort(int columnIndex) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-
-	public int getInt(int columnIndex) throws SQLException {
-
-		return 0;
-	}
+	}
 
 
 	public long getLong(int columnIndex) throws SQLException {
@@ -134,12 +224,6 @@ public class MyResultset implements ResultSet {
 	}
 
 
-	public String getString(String columnLabel) throws SQLException {
-
-		return null;
-	}
-
-
 	public boolean getBoolean(String columnLabel) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -152,12 +236,6 @@ public class MyResultset implements ResultSet {
 
 	public short getShort(String columnLabel) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-
-	public int getInt(String columnLabel) throws SQLException {
-		
-		return 0;
 	}
 
 
@@ -227,20 +305,7 @@ public class MyResultset implements ResultSet {
 
 
 	public String getCursorName() throws SQLException {
-
-		return null;
-	}
-
-
-	public ResultSetMetaData getMetaData() throws SQLException {
-
-		return null;
-	}
-
-
-	public Object getObject(int columnIndex) throws SQLException {
-
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 
@@ -248,13 +313,7 @@ public class MyResultset implements ResultSet {
 		throw new UnsupportedOperationException();
 	}
 
-
-	public int findColumn(String columnLabel) throws SQLException {
-
-		return 0;
-	}
-
-
+	
 	public Reader getCharacterStream(int columnIndex) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -275,71 +334,12 @@ public class MyResultset implements ResultSet {
 	}
 
 
-	public boolean isBeforeFirst() throws SQLException {
-
-		return false;
-	}
-
-
-	public boolean isAfterLast() throws SQLException {
-
-		return false;
-	}
-
-
-	public boolean isFirst() throws SQLException {
-
-		return false;
-	}
-
-
-	public boolean isLast() throws SQLException {
-
-		return false;
-	}
-
-
-	public void beforeFirst() throws SQLException {
-
-
-	}
-
-
-	public void afterLast() throws SQLException {
-
-
-	}
-
-
-	public boolean first() throws SQLException {
-
-		return false;
-	}
-
-
-	public boolean last() throws SQLException {
-
-		return false;
-	}
-
-
 	public int getRow() throws SQLException {
 		throw new UnsupportedOperationException();
 	}
 
 
-	public boolean absolute(int row) throws SQLException {
-
-		return false;
-	}
-
-
 	public boolean relative(int rows) throws SQLException {
-		throw new UnsupportedOperationException();
-	}
-
-
-	public boolean previous() throws SQLException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -614,12 +614,6 @@ public class MyResultset implements ResultSet {
 	}
 
 
-	public Statement getStatement() throws SQLException {
-
-		return null;
-	}
-
-
 	public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -772,12 +766,6 @@ public class MyResultset implements ResultSet {
 
 	public int getHoldability() throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-
-	public boolean isClosed() throws SQLException {
-
-		return false;
 	}
 
 

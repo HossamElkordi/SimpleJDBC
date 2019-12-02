@@ -5,7 +5,34 @@ import java.sql.SQLException;
 
 public class MyResultSetMetaData implements ResultSetMetaData {
 
+	public int getColumnCount() throws SQLException {
 
+		return 0;
+	}
+	
+	public String getColumnLabel(int column) throws SQLException {
+
+		return null;
+	}
+
+
+	public String getColumnName(int column) throws SQLException {
+
+		return null;
+	}
+	
+	public String getTableName(int column) throws SQLException {
+
+		return null;
+	}
+	
+	public int getColumnType(int column) throws SQLException {
+
+		return 0;
+	}
+
+//	================================ UNUSED METHODS ================================
+	
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -13,12 +40,6 @@ public class MyResultSetMetaData implements ResultSetMetaData {
 
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-
-	public int getColumnCount() throws SQLException {
-
-		return 0;
 	}
 
 
@@ -57,18 +78,6 @@ public class MyResultSetMetaData implements ResultSetMetaData {
 	}
 
 
-	public String getColumnLabel(int column) throws SQLException {
-
-		return null;
-	}
-
-
-	public String getColumnName(int column) throws SQLException {
-
-		return null;
-	}
-
-
 	public String getSchemaName(int column) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -84,20 +93,8 @@ public class MyResultSetMetaData implements ResultSetMetaData {
 	}
 
 
-	public String getTableName(int column) throws SQLException {
-
-		return null;
-	}
-
-
 	public String getCatalogName(int column) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-
-	public int getColumnType(int column) throws SQLException {
-
-		return 0;
 	}
 
 

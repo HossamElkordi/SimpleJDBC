@@ -5,8 +5,106 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
+
+import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
 
 public class MyStatement implements Statement {
+	
+	private Connection connection;
+	private String dirPath = "";
+	private CommandChecker cm;
+	private ArrayList<String> batch;
+	
+	public MyStatement(Connection connection, String path) {
+		this.connection = connection;
+		this.dirPath = path;
+		cm = ((MyConnection)connection).cm;
+		batch = new ArrayList<String>();
+	}
+	
+	public void addBatch(String sql) throws SQLException {
+		if(connection != null && (sql.toLowerCase().contains("insert") || sql.toLowerCase().contains("delete") || sql.toLowerCase().contains("update"))) {
+			batch.add(sql);
+		}else {
+			throw new SQLException();
+		}
+	}
+
+	public void clearBatch() throws SQLException {
+		if(connection != null) {
+			batch.clear();;
+		}else {
+			throw new SQLException();
+		}
+	}
+	
+	public int[] executeBatch() throws SQLException {
+		if(connection != null) {
+			int[] updatedRowsFromBatch = new int[this.batch.size()];
+			for (int i = 0; i < updatedRowsFromBatch.length; i++) {
+				cm.directCommand(this.batch.get(i));
+				updatedRowsFromBatch[i] = cm.getUpdatedRows();
+			}
+			return updatedRowsFromBatch;
+		}else {
+			throw new SQLException();
+		}
+	}
+
+	public Connection getConnection() throws SQLException {
+		if(this.connection != null) {
+			return this.connection;
+		}else {
+			throw new SQLException();
+		}
+	}
+	
+	public boolean execute(String sql) throws SQLException {
+		// need to check the timeout stuff which i don't understand
+		if((sql.toLowerCase().contains("create") || sql.toLowerCase().contains("drop")) && sql.toLowerCase().contains("database")) {
+			String[] s = sql.split("[\\s]+");
+			s[s.length - 1] = this.dirPath + System.getProperty("file.separator") + s[s.length - 1];
+			String newSql = "";
+			for (int i = 0; i < s.length; i++) {
+				newSql += s[i] + " ";
+			}
+			sql = newSql.substring(0, newSql.length() - 1);
+		}
+		this.cm.directCommand(sql);
+		return false;
+	}
+	
+	public ResultSet executeQuery(String sql) throws SQLException {
+		// need to check the timeout stuff which i don't understand
+		return null;
+	}
+
+	
+	public int executeUpdate(String sql) throws SQLException {
+		// need to check the timeout stuff which i don't understand
+		
+		return 0;
+	}
+	
+	public int getQueryTimeout() throws SQLException {
+
+		return 0;
+	}
+
+	
+	public void setQueryTimeout(int seconds) throws SQLException {
+
+
+	}
+
+	
+	public void close() throws SQLException {
+		this.connection = null;
+		batch.clear();
+	}
+	
+//	================================ UNUSED METHODS ================================
 
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException();
@@ -15,24 +113,6 @@ public class MyStatement implements Statement {
 	
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-	
-	public ResultSet executeQuery(String sql) throws SQLException {
-
-		return null;
-	}
-
-	
-	public int executeUpdate(String sql) throws SQLException {
-
-		return 0;
-	}
-
-	
-	public void close() throws SQLException {
-
-
 	}
 
 	
@@ -61,18 +141,6 @@ public class MyStatement implements Statement {
 	}
 
 	
-	public int getQueryTimeout() throws SQLException {
-
-		return 0;
-	}
-
-	
-	public void setQueryTimeout(int seconds) throws SQLException {
-
-
-	}
-
-	
 	public void cancel() throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -90,12 +158,6 @@ public class MyStatement implements Statement {
 	
 	public void setCursorName(String name) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-	
-	public boolean execute(String sql) throws SQLException {
-
-		return false;
 	}
 
 	
@@ -141,30 +203,6 @@ public class MyStatement implements Statement {
 	
 	public int getResultSetType() throws SQLException {
 		throw new UnsupportedOperationException();
-	}
-
-	
-	public void addBatch(String sql) throws SQLException {
-
-
-	}
-
-	
-	public void clearBatch() throws SQLException {
-
-
-	}
-
-	
-	public int[] executeBatch() throws SQLException {
-
-		return null;
-	}
-
-	
-	public Connection getConnection() throws SQLException {
-
-		return null;
 	}
 
 	

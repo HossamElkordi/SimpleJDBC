@@ -19,8 +19,38 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class MyConnection implements Connection {
+import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
 
+public class MyConnection implements Connection {
+	
+	private String path = "";
+	public CommandChecker cm;
+	Statement statement;
+	
+	public MyConnection(String path) {
+		this.path = path;
+		cm = instaceOfCommandChecker();
+	}
+
+	public Statement createStatement() throws SQLException {
+		return new MyStatement(this, path);
+	}
+	
+	public void close() throws SQLException {
+		if(statement != null) {
+			statement.close();
+		}
+	}
+	
+	private CommandChecker instaceOfCommandChecker() {
+		if(cm == null) {
+			cm = new CommandChecker();
+		}
+		return cm;
+	}
+
+//	================================ UNUSED METHODS ================================
+	
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -28,11 +58,7 @@ public class MyConnection implements Connection {
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
-
-	public Statement createStatement() throws SQLException {
-		return null;
-	}
-
+	
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		throw new UnsupportedOperationException();
 	}
@@ -61,9 +87,6 @@ public class MyConnection implements Connection {
 		throw new UnsupportedOperationException();
 	}
 
-	public void close() throws SQLException {
-		
-	}
 
 	public boolean isClosed() throws SQLException {
 		throw new UnsupportedOperationException();
