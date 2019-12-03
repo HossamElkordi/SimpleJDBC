@@ -98,8 +98,12 @@ public class MyStatement implements Statement {
 	
 	public int executeUpdate(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
-		
-		return 0;
+		if(connection != null) {
+			cm.directCommand(sql);
+			return cm.getUpdatedRows();
+		}else {
+			throw new SQLException();
+		}
 	}
 	
 	public int getQueryTimeout() throws SQLException {

@@ -20,7 +20,6 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.logging.FileHandler;
@@ -39,7 +38,6 @@ public class MyResultset implements ResultSet {
 	public MyResultset(Object[][] arr,String[] col,Statement s,String tn){
 		this.result=arr;
 		this.columns=col;
-		this.setMetaData();
 		opened=true;
 		statement=s;
 		tableName=tn;
