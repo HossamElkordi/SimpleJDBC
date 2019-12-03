@@ -77,7 +77,7 @@ public class MyStatement implements Statement {
 			throw new SQLException();
 		}
 	}
-	//TODO log the rest
+
 	public boolean execute(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
 		String newSql = sql.toLowerCase();
@@ -91,6 +91,7 @@ public class MyStatement implements Statement {
 			sql = newSql.substring(0, newSql.length() - 1);
 		}
 		this.cm.directCommand(sql);
+		logger.info("Executing query "+sql);
 		return (cm.getUpdatedRows() != -1) && (cm.getDataSet() != null);
 	}
 	
@@ -98,8 +99,10 @@ public class MyStatement implements Statement {
 		// need to check the timeout stuff which i don't understand
 		if(connection != null) {
 			cm.directCommand(sql);
+			logger.info("Executing query "+sql);
 			return new MyResultSet(cm.getDataSet(), cm.getColumnsNames(), this, nameGetterEngine(sql));
 		}else {
+			logger.severe("Couldn't execute query "+sql);
 			throw new SQLException();
 		}
 	}
@@ -108,13 +111,15 @@ public class MyStatement implements Statement {
 	public int executeUpdate(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
 		if(connection != null) {
+			logger.info("Executing update query "+sql);
 			cm.directCommand(sql);
 			return cm.getUpdatedRows();
 		}else {
+			logger.severe("Couldn't execute update query "+sql);
 			throw new SQLException();
 		}
 	}
-	
+	//TODO log the rest
 	public int getQueryTimeout() throws SQLException {
 
 		return 0;
