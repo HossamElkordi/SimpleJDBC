@@ -87,7 +87,7 @@ public class MyStatement implements Statement {
 			sql = newSql.substring(0, newSql.length() - 1);
 		}
 		this.cm.directCommand(sql);
-		return false;
+		return cm.getDataSet() != null;
 	}
 	
 	public ResultSet executeQuery(String sql) throws SQLException {

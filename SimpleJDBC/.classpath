@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="D:/CS Subjects/CS 2nd year/first semester/Programming 2/Labs/Lab 4/OOP_TAs-oop-course-projects-909547717a7a/test_supporting_files.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="D:/CS Subjects/CS 2nd year/first semester/Programming 2/Labs/Lab 4/OOP_TAs-oop-course-projects-909547717a7a/SimpleDBMS.jar"/>
+	<classpathentry kind="lib" path="D:/CS Subjects/CS 2nd year/first semester/Programming 2/Labs/Lab 4/OOP_TAs-oop-course-projects-909547717a7a/SimpleDBMS.jar" sourcepath="/SimpleDBMS/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
