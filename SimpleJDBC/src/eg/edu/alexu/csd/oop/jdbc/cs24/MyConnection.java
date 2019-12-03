@@ -67,13 +67,13 @@ public class MyConnection implements Connection {
 		{
 			System.setProperty("java.util.logging.SimpleFormatter.format",
 					"%1$tA %1$td %1$tB %1$tY %1$tH:%1$tM:%1$tS.%1$tL %tZ %4$s %2$s %5$s%6$s%n");
-			FileHandler handler = new FileHandler("SimpleJDBC"+ System.getProperty("file.separator")+"Logs"+System.getProperty("file.separator")+"MyLog.log", true);
+			FileHandler handler = new FileHandler("Logs"+System.getProperty("file.separator")+"MyLog.log", true);
 			logger.addHandler(handler);
 			SimpleFormatter formatter = new SimpleFormatter();
 			handler.setFormatter(formatter);
 		}catch (IOException e)
 		{
-			new File("SimpleJDBC"+ System.getProperty("file.separator")+"Logs").mkdir();
+			new File("Logs").mkdir();
 			WriteInLog();
 			e.printStackTrace();
 		}
