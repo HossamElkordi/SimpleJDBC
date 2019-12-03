@@ -78,7 +78,7 @@ public class MyResultSetMetaData implements ResultSetMetaData {
         }
     }
 
-//	================================ UNUSED METHODS ================================
+//	================================ UNUSED METHODS ================================//
 	
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new UnsupportedOperationException();
