@@ -19,119 +19,181 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
 
 public class MyResultset implements ResultSet {
+	private int cursor=0;
+	private Object[][] result;
+	private String[] columns;
+	private MyResultSetMetaData rmd;
+	private Boolean opened=false;
+	private Statement statement;
+	public MyResultset(Object[][] arr,String[] col,Statement s){
+		this.result=arr;
+		this.columns=col;
+		this.setMetaData();
+		opened=true;
+		statement=s;
+
+	}
+
+	private void setMetaData(){
+
+	}
 
 	public boolean absolute(int row) throws SQLException {
-
-		return false;
+		if(!opened){ throw new SQLException();}
+		if(Math.abs(row)<=result.length&&row!=0){
+			if(row>0){
+				this.cursor=row;
+				return true;
+			}
+			else{
+				this.cursor=result.length+row+1;
+				return true;
+			}
+		}
+		else {
+			cursor=0;
+			return false;}
 	}
 	
-	public boolean next() throws SQLException {
-
-		return false;
+	public boolean next() throws SQLException {if(!opened) {throw new SQLException();}
+		if(cursor!=result.length){cursor++;return true;}
+		else{cursor=result.length+1;return false;}
 	}
 	
 	public boolean previous() throws SQLException {
+		if(!opened) {throw new SQLException();}
+		if(cursor==1||cursor==0){
+			cursor=0;
+			return false;
+		}
+		else{cursor--; return true;}
 
-		return false;
 	}
 	
 	public String getString(int columnIndex) throws SQLException {
+		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {throw new SQLException();}
+		else{return result[cursor-1][columnIndex-1].toString();}
 
-		return null;
+	}
+	private int getindex(String columnLabel){
+		if(columns!=null){
+			for(int i=0;i<columns.length;i++){
+				if(columns[i].toLowerCase().equals(columnLabel.toLowerCase())){return i;}
+			}
+		}
+		return -1;
 	}
 	
 	public String getString(String columnLabel) throws SQLException {
+		int i=getindex(columnLabel);
+		if(!opened||i==-1) {throw new SQLException();}
+		else{return getString(i+1);}
 
-		return null;
 	}
 	
 	public int getInt(int columnIndex) throws SQLException {
+		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {throw new SQLException();}
+		if((result[cursor-1][columnIndex-1]).getClass()==Integer.class){return (int)result[cursor-1][columnIndex-1];}
 
 		return 0;
 	}
 	
 	public int getInt(String columnLabel) throws SQLException {
-		
-		return 0;
+		int i=getindex(columnLabel);
+		if(!opened||i==-1) {throw new SQLException();}
+		else{return getInt(i+1);}
 	}
 	
 	public ResultSetMetaData getMetaData() throws SQLException {
-
-		return null;
+		if(!opened) {throw new SQLException();}
+		return this.rmd;
 	}
 
 
 	public Object getObject(int columnIndex) throws SQLException {
+		if(!opened||columnIndex<1||columnIndex>columns.length||cursor==0||cursor==result.length+1) {throw new SQLException();}
+		else{return result[cursor-1][columnIndex-1];}
 
-		return null;
 	}
 	
 	public int findColumn(String columnLabel) throws SQLException {
-
-		return 0;
+		int i=getindex(columnLabel);
+		if(!opened||i==-1) {throw new SQLException();}
+		else{return i+1;}
 	}
 	
 	public boolean isBeforeFirst() throws SQLException {
-
-		return false;
+		if(!opened||result==null) {throw new SQLException();}
+		return cursor==0;
 	}
 
 
 	public boolean isAfterLast() throws SQLException {
-
-		return false;
+		if(!opened||result==null) {throw new SQLException();}
+		return cursor==result.length+1;
 	}
 
 
 	public boolean isFirst() throws SQLException {
+		if(!opened||result==null) {throw new SQLException();}
+		return cursor==1;
 
-		return false;
 	}
 
 
 	public boolean isLast() throws SQLException {
-
-		return false;
+		if(!opened||result==null) {throw new SQLException();}
+		return cursor==result.length;
 	}
 
 
 	public void beforeFirst() throws SQLException {
-
+		if(!opened||result==null) {throw new SQLException();}
+		cursor=0;
 
 	}
 	
 	public void afterLast() throws SQLException {
-
+		if(!opened||result==null) {throw new SQLException();}
+		cursor=result.length+1;
 
 	}
 
 
 	public boolean first() throws SQLException {
-
-		return false;
+		if(!opened) {throw new SQLException();}
+		if(result==null){return false;}
+		else{cursor=1;return true;}
 	}
 
 
 	public boolean last() throws SQLException {
-
-		return false;
+		if(!opened) {throw new SQLException();}
+		if(result==null){return false;}
+		else{cursor=result.length;return true;}
 	}
 	
 	public Statement getStatement() throws SQLException {
-
-		return null;
+		if(!opened) {throw new SQLException();}
+		return statement;
 	}
 	
 	public boolean isClosed() throws SQLException {
 
-		return false;
+		return !opened;
 	}
 
 	public void close() throws SQLException {
+
+		this.statement=null;
+		this.result=null;
+		this.opened=false;
+		this.columns=null;
 
 
 	}
@@ -166,7 +228,8 @@ public class MyResultset implements ResultSet {
 
 	public short getShort(int columnIndex) throws SQLException {
 		throw new UnsupportedOperationException();
-	}
+	}
+
 
 
 	public long getLong(int columnIndex) throws SQLException {
