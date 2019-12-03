@@ -18,7 +18,7 @@ public class MyDriver implements Driver {
 
     private static Logger logger = Logger.getLogger(String.valueOf(MyDriver.class));
 
-    MyDriver()
+    public MyDriver()
 	{
 		WriteInLog();
 	}
@@ -78,9 +78,8 @@ public class MyDriver implements Driver {
 			handler.setFormatter(formatter);
 		}catch (IOException e)
 		{
-			new File("SimpleJDBC"+ System.getProperty("file.separator")+"Logs").mkdir();
+			new File("SimpleJDBC"+ System.getProperty("file.separator")+"Logs").mkdirs();
 			WriteInLog();
-			e.printStackTrace();
 		}
 	}
 	

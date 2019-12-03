@@ -30,7 +30,7 @@ public class MyConnection implements Connection {
 	
 	private String path = "";
 	public CommandChecker cm;
-	Statement statement;
+	private Statement statement;
     private static Logger logger = Logger.getLogger(String.valueOf(MyConnection.class));
 
     public MyConnection(String path) {

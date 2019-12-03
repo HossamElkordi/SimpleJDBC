@@ -21,14 +21,11 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MyResultSet implements ResultSet {
 	private int cursor=0;
