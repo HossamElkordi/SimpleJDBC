@@ -1,5 +1,6 @@
 package eg.edu.alexu.csd.oop.jdbc.cs24;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -132,21 +133,23 @@ public class MyStatement implements Statement {
 		batch.clear();
 	}
 
-	private void WriteInLog()
-	{
-		try
-		{
-			System.setProperty("java.util.logging.SimpleFormatter.format",
-					"%1$tA %1$td %1$tB %1$tY %1$tH:%1$tM:%1$tS %tZ %4$s %2$s %5$s%6$s%n");
-			FileHandler handler = new FileHandler("MyLog.log", true);
-			logger.addHandler(handler);
-			SimpleFormatter formatter = new SimpleFormatter();
-			handler.setFormatter(formatter);
-		}catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    private static void WriteInLog()
+    {
+        try
+        {
+            System.setProperty("java.util.logging.SimpleFormatter.format",
+                    "%1$tA %1$td %1$tB %1$tY %1$tH:%1$tM:%1$tS.%1$tL %tZ %4$s %2$s %5$s%6$s%n");
+            FileHandler handler = new FileHandler("SimpleJDBC"+ System.getProperty("file.separator")+"Logs"+System.getProperty("file.separator")+"MyLog.log", true);
+            logger.addHandler(handler);
+            SimpleFormatter formatter = new SimpleFormatter();
+            handler.setFormatter(formatter);
+        }catch (IOException e)
+        {
+            new File("SimpleJDBC"+ System.getProperty("file.separator")+"Logs").mkdir();
+            WriteInLog();
+            e.printStackTrace();
+        }
+    }
 	
 	private String nameGetter(String in){
 		Pattern p=Pattern.compile("[^\\s]*");
