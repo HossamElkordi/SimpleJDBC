@@ -1,5 +1,6 @@
 package eg.edu.alexu.csd.oop.jdbc.cs24;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -22,6 +23,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class MyResultset implements ResultSet {
 	private int cursor=0;
@@ -31,6 +35,7 @@ public class MyResultset implements ResultSet {
 	private Boolean opened=false;
 	private Statement statement;
 	private String tableName;
+	private static Logger logger = Logger.getLogger(String.valueOf(MyResultset.class));
 	public MyResultset(Object[][] arr,String[] col,Statement s,String tn){
 		this.result=arr;
 		this.columns=col;
@@ -39,6 +44,7 @@ public class MyResultset implements ResultSet {
 		statement=s;
 		tableName=tn;
 		setMetaData();
+		WriteInLog();
 
 	}
 
@@ -47,7 +53,8 @@ public class MyResultset implements ResultSet {
 	}
 
 	public boolean absolute(int row) throws SQLException {
-		if(!opened){ throw new SQLException();}
+		if(!opened){ logger.severe("Couldn't change cursor's position to absolute");throw new SQLException();}
+		logger.info("Changing cursor's position to absolute");
 		if(Math.abs(row)<=result.length&&row!=0){
 			if(row>0){
 				this.cursor=row;
@@ -63,13 +70,15 @@ public class MyResultset implements ResultSet {
 			return false;}
 	}
 	
-	public boolean next() throws SQLException {if(!opened) {throw new SQLException();}
+	public boolean next() throws SQLException {if(!opened) {logger.severe("Couldn't change the cursor's position ");throw new SQLException();}
+		logger.info("Changing the cursor's position to its next position");
 		if(cursor!=result.length){cursor++;return true;}
 		else{cursor=result.length+1;return false;}
 	}
 	
 	public boolean previous() throws SQLException {
-		if(!opened) {throw new SQLException();}
+		if(!opened) {logger.severe("Couldn't change the cursor's position");throw new SQLException();}
+		logger.info("Changing the cursor's position to its previous position");
 		if(cursor==1||cursor==0){
 			cursor=0;
 			return false;
@@ -79,8 +88,8 @@ public class MyResultset implements ResultSet {
 	}
 	
 	public String getString(int columnIndex) throws SQLException {
-		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {throw new SQLException();}
-		else{return result[cursor-1][columnIndex-1].toString();}
+		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {logger.severe("Couldn't get string of the column index:"+columnIndex);throw new SQLException();}
+		else{logger.info("Getting string of the column index:"+columnIndex);return result[cursor-1][columnIndex-1].toString();}
 
 	}
 	private int getindex(String columnLabel){
@@ -94,13 +103,14 @@ public class MyResultset implements ResultSet {
 	
 	public String getString(String columnLabel) throws SQLException {
 		int i=getindex(columnLabel);
-		if(!opened||i==-1) {throw new SQLException();}
-		else{return getString(i+1);}
+		if(!opened||i==-1) {logger.severe("Couldn't get string of the column label:"+columnLabel);throw new SQLException();}
+		else{logger.info("Getting string of the column label:"+columnLabel);return getString(i+1);}
 
 	}
 	
 	public int getInt(int columnIndex) throws SQLException {
-		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {throw new SQLException();}
+		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {logger.severe("Couldn't get int of column index:"+columnIndex);throw new SQLException();}
+		logger.info("Getting int of column index:"+columnIndex);
 		if(int.class.isInstance(result[cursor-1][columnIndex-1])){return (int)result[cursor-1][columnIndex-1];}
 
 		return 0;
@@ -108,97 +118,119 @@ public class MyResultset implements ResultSet {
 	
 	public int getInt(String columnLabel) throws SQLException {
 		int i=getindex(columnLabel);
-		if(!opened||i==-1) {throw new SQLException();}
-		else{return getInt(i+1);}
+		if(!opened||i==-1) {logger.severe("Couldn't get the in of column label:"+columnLabel);throw new SQLException();}
+		else{logger.info("Getting int of column label:"+columnLabel);return getInt(i+1);}
 	}
 	
 	public ResultSetMetaData getMetaData() throws SQLException {
-		if(!opened) {throw new SQLException();}
+		if(!opened) {logger.severe("Couldn't get metadata");throw new SQLException();}
+		logger.info("Getting metadata");
 		return this.rmd;
 	}
 
 
 	public Object getObject(int columnIndex) throws SQLException {
-		if(!opened||columnIndex<1||columnIndex>columns.length||cursor==0||cursor==result.length+1) {throw new SQLException();}
-		else{return result[cursor-1][columnIndex-1];}
+		if(!opened||columnIndex<1||columnIndex>columns.length||cursor==0||cursor==result.length+1) {logger.severe("Couldn't get object of column index:"+columnIndex);throw new SQLException();}
+		else{logger.info("Getting object of column index:"+columnIndex);return result[cursor-1][columnIndex-1];}
 
 	}
 	
 	public int findColumn(String columnLabel) throws SQLException {
 		int i=getindex(columnLabel);
-		if(!opened||i==-1) {throw new SQLException();}
-		else{return i+1;}
+		if(!opened||i==-1) {logger.severe("Couldn't find column:"+columnLabel);throw new SQLException();}
+		else{logger.info("Getting column with name:"+columnLabel);return i+1;}
 	}
 	
 	public boolean isBeforeFirst() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't check if index is before first");throw new SQLException();}
+		logger.info("Checking if index is before first");
 		return cursor==0;
 	}
 
 
 	public boolean isAfterLast() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't check if index is after last");throw new SQLException();}
+		logger.info("Checking if index is after last");
 		return cursor==result.length+1;
 	}
 
 
 	public boolean isFirst() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't check if index is first");throw new SQLException();}
+		logger.info("Checking if index is first");
 		return cursor==1;
 
 	}
 
 
 	public boolean isLast() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't check if index is last");throw new SQLException();}
+		logger.info("Checking if index is last");
 		return cursor==result.length;
 	}
 
 
 	public void beforeFirst() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't execute the before first method");throw new SQLException();}
+		logger.info("Executing the before first method");
 		cursor=0;
 
 	}
 	
 	public void afterLast() throws SQLException {
-		if(!opened||result==null) {throw new SQLException();}
+		if(!opened||result==null) {logger.severe("Couldn't execute the after last method");throw new SQLException();}
 		cursor=result.length+1;
+		logger.info("Executing the after last method");
 
 	}
 
 
 	public boolean first() throws SQLException {
-		if(!opened) {throw new SQLException();}
+		if(!opened) {logger.severe("Couldn't check if cursor is on first");throw new SQLException();}
+		logger.info("Checking if cursor is on first");
 		if(result==null){return false;}
 		else{cursor=1;return true;}
 	}
 
 
 	public boolean last() throws SQLException {
-		if(!opened) {throw new SQLException();}
+		if(!opened) {logger.severe("Couldn't check if cursor is on last");throw new SQLException();}
+		logger.info("Checking if cursor is on last");
 		if(result==null){return false;}
 		else{cursor=result.length;return true;}
 	}
 	
 	public Statement getStatement() throws SQLException {
-		if(!opened) {throw new SQLException();}
+		if(!opened) {logger.severe("Couldn't get statement");throw new SQLException();}
+		logger.info("Getting statement");
 		return statement;
 	}
 	
 	public boolean isClosed() throws SQLException {
-
+		logger.info("Checking if closed");
 		return !opened;
 	}
 
 	public void close() throws SQLException {
-
+		logger.info("Closing");
 		this.statement=null;
 		this.result=null;
 		this.opened=false;
 		this.columns=null;
 
-
+	}
+	private void WriteInLog()
+	{
+		try
+		{
+			FileHandler handler = new FileHandler("MyLog.log", true);
+			logger.addHandler(handler);
+			SimpleFormatter formatter = new SimpleFormatter();
+			handler.setFormatter(formatter);
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 //	================================ UNUSED METHODS ================================
