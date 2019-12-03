@@ -1,11 +1,15 @@
 package eg.edu.alexu.csd.oop.jdbc.cs24;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
 
@@ -15,26 +19,32 @@ public class MyStatement implements Statement {
 	private String dirPath = "";
 	private CommandChecker cm;
 	private ArrayList<String> batch;
+    private static Logger logger = Logger.getLogger(String.valueOf(MyStatement.class));
 	
 	public MyStatement(Connection connection, String path) {
 		this.connection = connection;
 		this.dirPath = path;
 		cm = ((MyConnection)connection).cm;
 		batch = new ArrayList<String>();
+		WriteInLog();
 	}
 	
 	public void addBatch(String sql) throws SQLException {
 		if(connection != null && (sql.toLowerCase().contains("insert") || sql.toLowerCase().contains("delete") || sql.toLowerCase().contains("update"))) {
 			batch.add(sql);
+			logger.info("Batch added successfully !");
 		}else {
+		    logger.severe("Error adding a batch!");
 			throw new SQLException();
 		}
 	}
 
 	public void clearBatch() throws SQLException {
 		if(connection != null) {
-			batch.clear();;
+			batch.clear();
+			logger.info("Batch cleared successfully !");
 		}else {
+            logger.severe("Error clearing the batch !");
 			throw new SQLException();
 		}
 	}
@@ -45,21 +55,26 @@ public class MyStatement implements Statement {
 			for (int i = 0; i < updatedRowsFromBatch.length; i++) {
 				cm.directCommand(this.batch.get(i));
 				updatedRowsFromBatch[i] = cm.getUpdatedRows();
+				logger.info("Batch executed successfully !");
 			}
 			return updatedRowsFromBatch;
 		}else {
+            logger.severe("Error executing the batch!");
 			throw new SQLException();
 		}
 	}
 
 	public Connection getConnection() throws SQLException {
+        logger.info("Getting connection ...");
 		if(this.connection != null) {
+		    logger.info("Connection returned successfully !");
 			return this.connection;
 		}else {
+		    logger.severe("Error returning the connection !");
 			throw new SQLException();
 		}
 	}
-	
+	//TODO log the rest
 	public boolean execute(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
 		if((sql.toLowerCase().contains("create") || sql.toLowerCase().contains("drop")) && sql.toLowerCase().contains("database")) {
@@ -100,8 +115,23 @@ public class MyStatement implements Statement {
 
 	
 	public void close() throws SQLException {
+	    logger.info("Closing the state");
 		this.connection = null;
 		batch.clear();
+	}
+
+	private void WriteInLog()
+	{
+		try
+		{
+			FileHandler handler = new FileHandler("MyLog.log", true);
+			logger.addHandler(handler);
+			SimpleFormatter formatter = new SimpleFormatter();
+			handler.setFormatter(formatter);
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 //	================================ UNUSED METHODS ================================

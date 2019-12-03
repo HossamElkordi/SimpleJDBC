@@ -1,5 +1,6 @@
 package eg.edu.alexu.csd.oop.jdbc.cs24;
 
+import java.io.IOException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -18,6 +19,9 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
 
@@ -26,20 +30,27 @@ public class MyConnection implements Connection {
 	private String path = "";
 	public CommandChecker cm;
 	Statement statement;
-	
-	public MyConnection(String path) {
+    private static Logger logger = Logger.getLogger(String.valueOf(MyConnection.class));
+
+    public MyConnection(String path) {
 		this.path = path;
 		cm = instaceOfCommandChecker();
+		WriteInLog();
 	}
 
 	public Statement createStatement() throws SQLException {
+        logger.info("Statement created successfully!");
 		return new MyStatement(this, path);
 	}
 	
 	public void close() throws SQLException {
 		if(statement != null) {
 			statement.close();
+            logger.info("Connection has been closed !");
+            return;
 		}
+        logger.severe("No connection found to be closed !");
+		throw new SQLException("No statement found");
 	}
 	
 	private CommandChecker instaceOfCommandChecker() {
@@ -47,6 +58,20 @@ public class MyConnection implements Connection {
 			cm = new CommandChecker();
 		}
 		return cm;
+	}
+
+	private void WriteInLog()
+	{
+		try
+		{
+			FileHandler handler = new FileHandler("MyLog.log", true);
+			logger.addHandler(handler);
+			SimpleFormatter formatter = new SimpleFormatter();
+			handler.setFormatter(formatter);
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 //	================================ UNUSED METHODS ================================
