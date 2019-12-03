@@ -30,17 +30,20 @@ public class MyResultset implements ResultSet {
 	private MyResultSetMetaData rmd;
 	private Boolean opened=false;
 	private Statement statement;
-	public MyResultset(Object[][] arr,String[] col,Statement s){
+	private String tableName;
+	public MyResultset(Object[][] arr,String[] col,Statement s,String tn){
 		this.result=arr;
 		this.columns=col;
 		this.setMetaData();
 		opened=true;
 		statement=s;
+		tableName=tn;
+		setMetaData();
 
 	}
 
 	private void setMetaData(){
-
+		rmd=new MyResultSetMetaData(tableName,columns,result);
 	}
 
 	public boolean absolute(int row) throws SQLException {
@@ -98,7 +101,7 @@ public class MyResultset implements ResultSet {
 	
 	public int getInt(int columnIndex) throws SQLException {
 		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {throw new SQLException();}
-		if((result[cursor-1][columnIndex-1]).getClass()==Integer.class){return (int)result[cursor-1][columnIndex-1];}
+		if(int.class.isInstance(result[cursor-1][columnIndex-1])){return (int)result[cursor-1][columnIndex-1];}
 
 		return 0;
 	}
