@@ -4,31 +4,48 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class MyResultSetMetaData implements ResultSetMetaData {
+	private String tableName;
+	private String [] columns;
+	private Object[][] result;
+
+	public MyResultSetMetaData(String tn,String[] col,Object[][]res){
+		this.tableName=tn;
+		this.columns=col;
+		this.result=res;
+
+	}
 
 	public int getColumnCount() throws SQLException {
-
-		return 0;
+		if (columns!=null) return columns.length;
+		else return 0;
 	}
 	
 	public String getColumnLabel(int column) throws SQLException {
-
-		return null;
+		if(this.columns!=null&&column>=this.columns.length&&column!=0){
+			return columns[column-1];
+		}
+		else throw new SQLException();
 	}
 
 
 	public String getColumnName(int column) throws SQLException {
-
-		return null;
+		if(this.columns!=null&&column>=this.columns.length&&column!=0){
+			return columns[column-1];
+		}
+		else throw new SQLException();
 	}
 	
 	public String getTableName(int column) throws SQLException {
-
-		return null;
+       if(tableName!=null){return tableName;}
+       else {throw new SQLException();}
 	}
 	
 	public int getColumnType(int column) throws SQLException {
-
-		return 0;
+		if(this.result!=null&&column>=this.columns.length&&column!=0){
+			if (int.class.isInstance(result[0][column-1])){return 4;}
+			else if(String.class.isInstance(result[0][column-1])){return 12;}
+		}
+		throw new SQLException();
 	}
 
 //	================================ UNUSED METHODS ================================
