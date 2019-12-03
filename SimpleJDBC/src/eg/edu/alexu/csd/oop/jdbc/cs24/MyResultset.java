@@ -20,11 +20,14 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MyResultset implements ResultSet {
 	private int cursor=0;
@@ -231,6 +234,34 @@ public class MyResultset implements ResultSet {
 		{
 			e.printStackTrace();
 		}
+	}
+	private String nameGetter(String in){
+		Pattern p=Pattern.compile("[^\\s]*");
+		ArrayList<String> a=new ArrayList<>();
+		Matcher matcher=p.matcher(in);
+		while (matcher.find()) {String j=matcher.group();
+			if(!j.equals("")){
+				a.add(j);
+			}
+
+		}
+		if(a.size()!=2) return null;
+		else return a.get(1);
+
+	}
+	private String nameGetterEngine(String input){
+		int fromi,conditioni;
+		fromi=input.indexOf("from");
+		if(!input.contains("where")){conditioni=-1;}
+		else{conditioni=input.indexOf("where");}
+		String tablename;
+		if(conditioni==-1){
+			tablename=nameGetter(input.substring(fromi));
+		}
+		else{tablename=nameGetter(input.substring(fromi,conditioni));}
+		if(tablename==null)return null;
+		else{return tablename;}
+
 	}
 
 //	================================ UNUSED METHODS ================================
