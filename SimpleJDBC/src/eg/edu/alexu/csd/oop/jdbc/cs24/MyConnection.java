@@ -49,8 +49,8 @@ public class MyConnection implements Connection {
             logger.info("Connection has been closed !");
             return;
 		}
-        logger.severe("No connection found to be closed !");
-		throw new SQLException("No statement found");
+//        logger.severe("No connection found to be closed !");
+//		throw new SQLException("No statement found");
 	}
 	
 	private CommandChecker instaceOfCommandChecker() {

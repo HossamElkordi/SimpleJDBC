@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
 
@@ -77,22 +79,28 @@ public class MyStatement implements Statement {
 	//TODO log the rest
 	public boolean execute(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
-		if((sql.toLowerCase().contains("create") || sql.toLowerCase().contains("drop")) && sql.toLowerCase().contains("database")) {
+		String newSql = sql.toLowerCase();
+		if((newSql.contains("create") || newSql.contains("drop")) && newSql.contains("database")) {
 			String[] s = sql.split("[\\s]+");
 			s[s.length - 1] = this.dirPath + System.getProperty("file.separator") + s[s.length - 1];
-			String newSql = "";
+			newSql = "";
 			for (int i = 0; i < s.length; i++) {
 				newSql += s[i] + " ";
 			}
 			sql = newSql.substring(0, newSql.length() - 1);
 		}
 		this.cm.directCommand(sql);
-		return cm.getDataSet() != null;
+		return (cm.getUpdatedRows() != -1) && (cm.getDataSet() != null);
 	}
 	
 	public ResultSet executeQuery(String sql) throws SQLException {
 		// need to check the timeout stuff which i don't understand
-		return null;
+		if(connection != null) {
+			cm.directCommand(sql);
+			return new MyResultSet(cm.getDataSet(), cm.getColumnsNames(), this, nameGetterEngine(sql));
+		}else {
+			throw new SQLException();
+		}
 	}
 
 	
@@ -138,6 +146,36 @@ public class MyStatement implements Statement {
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	private String nameGetter(String in){
+		Pattern p=Pattern.compile("[^\\s]*");
+		ArrayList<String> a=new ArrayList<>();
+		Matcher matcher=p.matcher(in);
+		while (matcher.find()) {String j=matcher.group();
+			if(!j.equals("")){
+				a.add(j);
+			}
+
+		}
+		if(a.size()!=2) return null;
+		else return a.get(1);
+
+	}
+	private String nameGetterEngine(String input){
+		int fromi,conditioni;
+		String s = input.toLowerCase();
+		fromi=s.indexOf("from");
+		if(!s.contains("where")){conditioni=-1;}
+		else{conditioni=s.indexOf("where");}
+		String tablename;
+		if(conditioni==-1){
+			tablename=nameGetter(s.substring(fromi));
+		}
+		else{tablename=nameGetter(s.substring(fromi,conditioni));}
+		if(tablename==null)return null;
+		else{return tablename;}
+
 	}
 	
 //	================================ UNUSED METHODS ================================

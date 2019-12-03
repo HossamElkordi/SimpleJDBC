@@ -29,7 +29,7 @@ import java.util.logging.SimpleFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MyResultset implements ResultSet {
+public class MyResultSet implements ResultSet {
 	private int cursor=0;
 	private Object[][] result;
 	private String[] columns;
@@ -37,8 +37,8 @@ public class MyResultset implements ResultSet {
 	private Boolean opened=false;
 	private Statement statement;
 	private String tableName;
-	private static Logger logger = Logger.getLogger(String.valueOf(MyResultset.class));
-	public MyResultset(Object[][] arr,String[] col,Statement s,String tn){
+	private static Logger logger = Logger.getLogger(String.valueOf(MyResultSet.class));
+	public MyResultSet(Object[][] arr,String[] col,Statement s,String tn){
 		this.result=arr;
 		this.columns=col;
 		opened=true;
@@ -234,34 +234,6 @@ public class MyResultset implements ResultSet {
 		{
 			e.printStackTrace();
 		}
-	}
-	private String nameGetter(String in){
-		Pattern p=Pattern.compile("[^\\s]*");
-		ArrayList<String> a=new ArrayList<>();
-		Matcher matcher=p.matcher(in);
-		while (matcher.find()) {String j=matcher.group();
-			if(!j.equals("")){
-				a.add(j);
-			}
-
-		}
-		if(a.size()!=2) return null;
-		else return a.get(1);
-
-	}
-	private String nameGetterEngine(String input){
-		int fromi,conditioni;
-		fromi=input.indexOf("from");
-		if(!input.contains("where")){conditioni=-1;}
-		else{conditioni=input.indexOf("where");}
-		String tablename;
-		if(conditioni==-1){
-			tablename=nameGetter(input.substring(fromi));
-		}
-		else{tablename=nameGetter(input.substring(fromi,conditioni));}
-		if(tablename==null)return null;
-		else{return tablename;}
-
 	}
 
 //	================================ UNUSED METHODS ================================
