@@ -223,6 +223,8 @@ public class MyResultset implements ResultSet {
 	{
 		try
 		{
+			System.setProperty("java.util.logging.SimpleFormatter.format",
+					"%1$tA %1$td %1$tB %1$tY %1$tH:%1$tM:%1$tS %tZ %4$s %2$s %5$s%6$s%n");
 			FileHandler handler = new FileHandler("MyLog.log", true);
 			logger.addHandler(handler);
 			SimpleFormatter formatter = new SimpleFormatter();
