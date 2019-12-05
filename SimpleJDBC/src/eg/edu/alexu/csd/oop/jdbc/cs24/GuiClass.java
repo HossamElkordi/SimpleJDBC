@@ -3,7 +3,11 @@ package eg.edu.alexu.csd.oop.jdbc.cs24;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,15 +24,22 @@ import javax.swing.JTextField;
 
 public class GuiClass {
 
+	private MyConnection connect;
+	private MyStatement state;
+	private MyResultSet resultSet;
+	private MyResultSetMetaData resultMetaData;
+	private MyDriver driver;
+	private Connection connection;
+	private Statement statement;
 
 	private JFrame frame;
 	private JTable table;
 	private JTextArea commandArea;
 	private DefaultTableModel model;
 	private JLabel updaredRowslbl;
-	
+
 	private CommandChecker comCheck;
-	
+
 	private String document = "";
 	private JButton btnExecuteBatch;
 	private JButton btnClearBatch;
@@ -41,7 +52,7 @@ public class GuiClass {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		
+
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			GuiClass window = new GuiClass();
@@ -49,7 +60,7 @@ public class GuiClass {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-			
+
 	}
 
 	/**
@@ -69,17 +80,17 @@ public class GuiClass {
 		frame.setBounds(100, 100, 632, 730);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
-		
+
 		JScrollPane tableScrollPane = new JScrollPane();
 		tableScrollPane.setBounds(260, 11, 346, 399);
 		frame.getContentPane().add(tableScrollPane);
-		
+
 		model = new DefaultTableModel();
 		setTableModel();
 		table = new JTable();
 		table.setModel(model);
 		tableScrollPane.setViewportView(table);
-		
+
 		setCommand();
 	}
 
@@ -98,16 +109,16 @@ public class GuiClass {
 		if (data != null) {
 			for (int i = 0; i < data.length; i++) {
 				model.addRow(data[i]);
-			} 
+			}
 		}
-		
+
 	}
 
 	private void setCommand() {
 		JScrollPane commandScrollPane = new JScrollPane();
 		commandScrollPane.setBounds(10, 149, 239, 159);
 		frame.getContentPane().add(commandScrollPane);
-		
+
 		JButton btnExecute = new JButton("Execute");
 		btnExecute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -129,24 +140,34 @@ public class GuiClass {
 		});
 		btnExecute.setBounds(10, 319, 104, 23);
 		frame.getContentPane().add(btnExecute);
-		
+
 		JButton btnAddToBatch = new JButton("Add to Batch");
 		btnAddToBatch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 			}
 		});
 		btnAddToBatch.setBounds(146, 319, 104, 23);
 		frame.getContentPane().add(btnAddToBatch);
-		
+
 		btnExecuteBatch = new JButton("Execute Batch");
 		btnExecuteBatch.setBounds(10, 353, 104, 23);
 		frame.getContentPane().add(btnExecuteBatch);
-		
+		btnExecuteBatch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
+
 		btnClearBatch = new JButton("Clear Batch");
 		btnClearBatch.setBounds(146, 353, 104, 23);
 		frame.getContentPane().add(btnClearBatch);
-		
+		btnClearBatch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+			}
+		});
+
 		setLabel();
 		setTimeoutStuff();
 		setResultSetStuff();
@@ -154,102 +175,180 @@ public class GuiClass {
 		setMetaDataStuff();
 		setDriverConnectionStatementStuff();
 	}
-	
+
 	private void setResultSetStuff() {
 		JLabel lblResultsetRows = new JLabel("ResultSet Rows");
 		lblResultsetRows.setHorizontalAlignment(SwingConstants.CENTER);
 		lblResultsetRows.setBounds(62, 492, 118, 14);
 		frame.getContentPane().add(lblResultsetRows);
-		
+
 		resultRows = new JTextField();
 		resultRows.setBounds(10, 517, 215, 20);
 		frame.getContentPane().add(resultRows);
 		resultRows.setColumns(10);
-		
+
 		JButton btnAbsolute = new JButton("Set Absolute");
 		btnAbsolute.setBounds(10, 548, 104, 23);
 		frame.getContentPane().add(btnAbsolute);
-		
+		btnAbsolute.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.absolute(Integer.parseInt(resultRows.getText()));
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		JButton btnNext = new JButton("Next");
 		btnNext.setBounds(136, 548, 89, 23);
 		frame.getContentPane().add(btnNext);
-		
-		JButton btnPrevious = new JButton("Previous");
-		btnPrevious.addActionListener(new ActionListener() {
+		btnNext.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.next();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
 		});
+
+		JButton btnPrevious = new JButton("Previous");
 		btnPrevious.setBounds(136, 582, 89, 23);
 		frame.getContentPane().add(btnPrevious);
-		
-		JButton btnBeforePrevious = new JButton("BeforeFr");
-		btnBeforePrevious.addActionListener(new ActionListener() {
+		btnPrevious.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.previous();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
 		});
+
+		JButton btnBeforePrevious = new JButton("BeforeFr");
 		btnBeforePrevious.setBounds(10, 582, 104, 23);
 		frame.getContentPane().add(btnBeforePrevious);
-		
+		btnBeforePrevious.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.beforeFirst();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		JButton btnNewButton = new JButton("AfterLast");
 		btnNewButton.setBounds(10, 616, 104, 23);
 		frame.getContentPane().add(btnNewButton);
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.afterLast();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
 	}
-	
+
 	private void setColumnControl() {
 		JLabel lblColumnsControl = new JLabel("Columns Control");
 		lblColumnsControl.setHorizontalAlignment(SwingConstants.CENTER);
 		lblColumnsControl.setBounds(357, 421, 110, 14);
 		frame.getContentPane().add(lblColumnsControl);
-		
+
 		ColumnControlInput = new JTextField();
 		ColumnControlInput.setBounds(312, 448, 125, 20);
 		frame.getContentPane().add(ColumnControlInput);
 		ColumnControlInput.setColumns(10);
-		
+
 		JButton getRsultBtn = new JButton("Get Result");
 		getRsultBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					resultSet.getString(ColumnControlInput.getText());
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
 		});
 		getRsultBtn.setBounds(447, 447, 89, 23);
 		frame.getContentPane().add(getRsultBtn);
-		
+
 		JLabel lblResult = new JLabel("Result:  ");
 		lblResult.setBounds(312, 483, 294, 14);
 		frame.getContentPane().add(lblResult);
 	}
-	
+
 	private void setMetaDataStuff() {
 		JLabel lblResultsetMetadata = new JLabel("ResultSet MetaData");
 		lblResultsetMetadata.setHorizontalAlignment(SwingConstants.CENTER);
 		lblResultsetMetadata.setBounds(343, 516, 141, 14);
 		frame.getContentPane().add(lblResultsetMetadata);
-		
+
 		metaInputTxt = new JTextField();
 		metaInputTxt.setBounds(312, 549, 125, 20);
 		frame.getContentPane().add(metaInputTxt);
 		metaInputTxt.setColumns(10);
-		
-		JButton btnGetColName = new JButton("Get ColName");
-		btnGetColName.setBounds(447, 548, 118, 23);
-		frame.getContentPane().add(btnGetColName);
-		
-		JButton GetTableName = new JButton("Get TableName");
-		GetTableName.setBounds(447, 582, 118, 23);
-		frame.getContentPane().add(GetTableName);
-		
-		JButton btnGetColtype = new JButton("Get colType");
-		btnGetColtype.setBounds(447, 616, 118, 23);
-		frame.getContentPane().add(btnGetColtype);
-		
-		JButton getColCount = new JButton("Get ColCount");
-		getColCount.setBounds(312, 580, 125, 23);
-		frame.getContentPane().add(getColCount);
-		
+
 		JLabel lblResult_1 = new JLabel("Result: ");
 		lblResult_1.setBounds(312, 657, 253, 14);
 		frame.getContentPane().add(lblResult_1);
-		
+
+		JButton btnGetColName = new JButton("Get ColName");
+		btnGetColName.setBounds(447, 548, 118, 23);
+		frame.getContentPane().add(btnGetColName);
+		btnGetColName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					lblResult_1.setText("Result: " + resultMetaData.getColumnName(Integer.parseInt(metaInputTxt.getText())));
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		JButton GetTableName = new JButton("Get TableName");
+		GetTableName.setBounds(447, 582, 118, 23);
+		frame.getContentPane().add(GetTableName);
+		GetTableName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					lblResult_1.setText("Result: " + resultMetaData.getTableName(Integer.parseInt(metaInputTxt.getText())));
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		JButton btnGetColtype = new JButton("Get colType");
+		btnGetColtype.setBounds(447, 616, 118, 23);
+		frame.getContentPane().add(btnGetColtype);
+		btnGetColtype.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					lblResult_1.setText("Result: " + resultMetaData.getColumnType(Integer.parseInt(metaInputTxt.getText())));
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		JButton getColCount = new JButton("Get ColCount");
+		getColCount.setBounds(312, 580, 125, 23);
+		frame.getContentPane().add(getColCount);
+		getColCount.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					lblResult_1.setText("Result: " + resultMetaData.getColumnCount());
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		commandArea = new JTextArea();
 		commandArea.setBounds(10, 151, 237, 157);
 		frame.getContentPane().add(commandArea);
@@ -258,53 +357,97 @@ public class GuiClass {
 		commandArea.setFont(new Font("Courier New", Font.PLAIN, 13));
 		commandArea.setWrapStyleWord(true);
 	}
-	
+
 	private void setDriverConnectionStatementStuff() {
 		JButton btnCreateDriver = new JButton("Create Driver");
 		btnCreateDriver.setBounds(62, 25, 118, 23);
 		frame.getContentPane().add(btnCreateDriver);
-		
+		btnCreateDriver.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				driver = new MyDriver();
+			}
+		});
+
 		JLabel lblConnection = new JLabel("Connection:");
 		lblConnection.setHorizontalAlignment(SwingConstants.CENTER);
 		lblConnection.setBounds(10, 68, 65, 23);
 		frame.getContentPane().add(lblConnection);
-		
+
 		JButton createConBtn = new JButton("Create");
 		createConBtn.setBounds(90, 68, 72, 23);
 		frame.getContentPane().add(createConBtn);
-		
+		createConBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Properties info = new Properties();
+				File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
+				info.put("path", dbDir.getAbsoluteFile());
+				try {
+					connection = driver.connect("jdbc:xmldb://localhost", info);
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		JButton closeConBtn = new JButton("Close");
 		closeConBtn.setBounds(169, 68, 72, 23);
 		frame.getContentPane().add(closeConBtn);
-		
+		closeConBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					connection.close();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		JLabel lblStatement = new JLabel("Statement:");
 		lblStatement.setHorizontalAlignment(SwingConstants.CENTER);
 		lblStatement.setBounds(10, 102, 65, 23);
 		frame.getContentPane().add(lblStatement);
-		
+
 		JButton createStmBtn = new JButton("Create");
 		createStmBtn.setBounds(90, 102, 72, 23);
 		frame.getContentPane().add(createStmBtn);
-		
+		createStmBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					statement = connection.createStatement();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 		JButton closeStmBtn = new JButton("Close");
 		closeStmBtn.setBounds(169, 102, 72, 23);
 		frame.getContentPane().add(closeStmBtn);
+		closeStmBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					statement.close();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
 	}
-	
+
 	private void setTimeoutStuff() {
 		timeoutField = new JTextField();
 		timeoutField.setBounds(10, 448, 86, 20);
 		frame.getContentPane().add(timeoutField);
 		timeoutField.setColumns(10);
-		
+
 		JButton btnSet = new JButton("Set");
 		btnSet.setBounds(106, 447, 56, 23);
 		frame.getContentPane().add(btnSet);
-		
+
 		JButton btnGet = new JButton("Get");
 		btnGet.setBounds(169, 447, 56, 23);
 		frame.getContentPane().add(btnGet);
-		
+
 		JLabel lblTimeoutzeroFor = new JLabel("Timeout (zero for default)");
 		lblTimeoutzeroFor.setHorizontalAlignment(SwingConstants.CENTER);
 		lblTimeoutzeroFor.setBounds(62, 423, 132, 14);
@@ -317,7 +460,7 @@ public class GuiClass {
 		updaredRowslbl.setBounds(0, 387, 240, 23);
 		frame.getContentPane().add(updaredRowslbl);
 	}
-	
+
 	private int getCommandStartIndex(String oldDoc) {
 		int start = 0;
 		for (int i = 0; i < document.length(); i++) {
