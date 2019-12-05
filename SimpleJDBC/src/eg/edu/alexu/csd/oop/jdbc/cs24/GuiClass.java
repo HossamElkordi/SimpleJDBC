@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -12,23 +15,22 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
-import javax.swing.JTextField;
 
 public class GuiClass {
 
-	private MyConnection connect;
-	private MyStatement state;
-	private MyResultSet resultSet;
-	private MyResultSetMetaData resultMetaData;
-	private MyDriver driver;
+	private ResultSet resultSet;
+	private ResultSetMetaData resultMetaData;
+	private Driver driver;
 	private Connection connection;
 	private Statement statement;
 
@@ -67,7 +69,6 @@ public class GuiClass {
 	 * Create the application.
 	 */
 	public GuiClass() {
-		comCheck = new CommandChecker();
 		initialize();
 	}
 
@@ -76,8 +77,9 @@ public class GuiClass {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setTitle("Database Management System");
+		frame.setTitle("Java Database Connectivity");
 		frame.setBounds(100, 100, 632, 730);
+		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -92,6 +94,12 @@ public class GuiClass {
 		tableScrollPane.setViewportView(table);
 
 		setCommand();
+		setupdaredRowslbl();
+		setTimeoutStuff();
+		setResultSetStuff();
+		setColumnControl();
+		setMetaDataStuff();
+		setDriverConnectionStatementStuff();
 	}
 
 	private void setTableModel() {
@@ -99,40 +107,56 @@ public class GuiClass {
 		for (int i = 0; i < count; i++) {
 			model.removeRow(0);
 		}
-		String[] colName = comCheck.getColumnsNames();
-		if(colName != null) {
-			model.setColumnIdentifiers(colName);
-		}else {
-			model.setColumnIdentifiers(new String[0]);
-		}
-		Object[][] data = comCheck.getDataSet();
-		if (data != null) {
-			for (int i = 0; i < data.length; i++) {
-				model.addRow(data[i]);
+		if (comCheck != null) {
+			String[] colName = comCheck.getColumnsNames();
+			if(colName != null) {
+				model.setColumnIdentifiers(colName);
+			}else {
+				model.setColumnIdentifiers(new String[0]);
+			}
+			Object[][] data = comCheck.getDataSet();
+			if (data != null) {
+				for (int i = 0; i < data.length; i++) {
+					model.addRow(data[i]);
+				}
 			}
 		}
 
 	}
 
 	private void setCommand() {
-		JScrollPane commandScrollPane = new JScrollPane();
-		commandScrollPane.setBounds(10, 149, 239, 159);
-		frame.getContentPane().add(commandScrollPane);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 151, 237, 157);
+		frame.getContentPane().add(scrollPane);
+		
+		commandArea = new JTextArea();
+		scrollPane.setViewportView(commandArea);
+		commandArea.setTabSize(5);
+		commandArea.setLineWrap(true);
+		commandArea.setFont(new Font("Courier New", Font.PLAIN, 13));
+		commandArea.setWrapStyleWord(true);
+		commandArea.setEditable(false);
 
 		JButton btnExecute = new JButton("Execute");
 		btnExecute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					int count = document.length();
-					String oldDoc = document;
-					document = commandArea.getText().replaceAll("\n", "");
-					if(document.lastIndexOf(oldDoc, 0) != -1) {
-						comCheck.directCommand(document.substring(count));
+					if(statement != null) {
+						String sql = getLastCommand().toLowerCase();
+						if(sql.contains("select")) {
+							resultSet = statement.executeQuery(sql);
+							resultMetaData = resultSet.getMetaData();
+						}else if(sql.contains("insert") || sql.contains("delete") || sql.contains("update")){
+							statement.executeUpdate(sql);
+						}else {
+							statement.execute(sql);
+						}
+						updaredRowslbl.setText("Number of updated rows: " + comCheck.getUpdatedRows());
+						setTableModel();
 					}else {
-						comCheck.directCommand(document.substring(getCommandStartIndex(oldDoc)));
+						JOptionPane.showMessageDialog(null, "No statement created!");
 					}
-					updaredRowslbl.setText("Number of updated rows: " + comCheck.getUpdatedRows());
-					setTableModel();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}
@@ -144,7 +168,15 @@ public class GuiClass {
 		JButton btnAddToBatch = new JButton("Add to Batch");
 		btnAddToBatch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				if(statement != null) {
+					try {
+						statement.addBatch(getLastCommand());
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "No statement created!");
+				}
 			}
 		});
 		btnAddToBatch.setBounds(146, 319, 104, 23);
@@ -155,7 +187,16 @@ public class GuiClass {
 		frame.getContentPane().add(btnExecuteBatch);
 		btnExecuteBatch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				if(statement != null) {
+					try {
+						int[] arr = statement.executeBatch();
+						updaredRowslbl.setText("Number of updated rows: " + arr.toString());
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "No statement created!");
+				}
 			}
 		});
 
@@ -164,16 +205,17 @@ public class GuiClass {
 		frame.getContentPane().add(btnClearBatch);
 		btnClearBatch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				if(statement != null) {
+					try {
+						statement.clearBatch();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "No statement created!");
+				}
 			}
 		});
-
-		setLabel();
-		setTimeoutStuff();
-		setResultSetStuff();
-		setColumnControl();
-		setMetaDataStuff();
-		setDriverConnectionStatementStuff();
 	}
 
 	private void setResultSetStuff() {
@@ -192,10 +234,17 @@ public class GuiClass {
 		frame.getContentPane().add(btnAbsolute);
 		btnAbsolute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.absolute(Integer.parseInt(resultRows.getText()));
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if(resultSet != null) {
+					try {
+						String s = resultRows.getText();
+						if(s.matches("[0-9]+")) {
+							resultSet.absolute(Integer.parseInt(s));
+						}else {
+							JOptionPane.showMessageDialog(null, "Type mismatch!");
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		});
@@ -205,10 +254,12 @@ public class GuiClass {
 		frame.getContentPane().add(btnNext);
 		btnNext.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.next();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultSet != null) {
+					try {
+						resultSet.next();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -218,10 +269,12 @@ public class GuiClass {
 		frame.getContentPane().add(btnPrevious);
 		btnPrevious.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.previous();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultSet != null) {
+					try {
+						resultSet.previous();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -231,10 +284,12 @@ public class GuiClass {
 		frame.getContentPane().add(btnBeforePrevious);
 		btnBeforePrevious.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.beforeFirst();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultSet != null) {
+					try {
+						resultSet.beforeFirst();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -244,10 +299,12 @@ public class GuiClass {
 		frame.getContentPane().add(btnNewButton);
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.afterLast();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultSet != null) {
+					try {
+						resultSet.afterLast();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -263,23 +320,30 @@ public class GuiClass {
 		ColumnControlInput.setBounds(312, 448, 125, 20);
 		frame.getContentPane().add(ColumnControlInput);
 		ColumnControlInput.setColumns(10);
+		
+		JLabel lblResult = new JLabel("Result:  ");
+		lblResult.setBounds(312, 483, 294, 14);
+		frame.getContentPane().add(lblResult);
 
 		JButton getRsultBtn = new JButton("Get Result");
 		getRsultBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					resultSet.getString(ColumnControlInput.getText());
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultSet != null) {
+					try {
+						String s = ColumnControlInput.getText();
+						if(s.matches("[0-9]+")) {
+							lblResult.setText("Result:  " + resultSet.getString(Integer.parseInt(s)));
+						}else {
+							lblResult.setText("Result:  " + resultSet.getString(s));
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
 				}
 			}
 		});
 		getRsultBtn.setBounds(447, 447, 89, 23);
 		frame.getContentPane().add(getRsultBtn);
-
-		JLabel lblResult = new JLabel("Result:  ");
-		lblResult.setBounds(312, 483, 294, 14);
-		frame.getContentPane().add(lblResult);
 	}
 
 	private void setMetaDataStuff() {
@@ -302,10 +366,15 @@ public class GuiClass {
 		frame.getContentPane().add(btnGetColName);
 		btnGetColName.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					lblResult_1.setText("Result: " + resultMetaData.getColumnName(Integer.parseInt(metaInputTxt.getText())));
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultMetaData != null) {
+					try {
+						String s = metaInputTxt.getText();
+						if (s.matches("[0-9]+")) {
+							lblResult_1.setText("Result: " + resultMetaData.getColumnName(Integer.parseInt(s)));
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -315,10 +384,15 @@ public class GuiClass {
 		frame.getContentPane().add(GetTableName);
 		GetTableName.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					lblResult_1.setText("Result: " + resultMetaData.getTableName(Integer.parseInt(metaInputTxt.getText())));
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultMetaData != null) {
+					try {
+						String s = metaInputTxt.getText();
+						if (s.matches("[0-9]+")) {
+							lblResult_1.setText("Result: " + resultMetaData.getTableName(Integer.parseInt(s)));
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -328,10 +402,15 @@ public class GuiClass {
 		frame.getContentPane().add(btnGetColtype);
 		btnGetColtype.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					lblResult_1.setText("Result: " + resultMetaData.getColumnType(Integer.parseInt(metaInputTxt.getText())));
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultMetaData != null) {
+					try {
+						String s = metaInputTxt.getText();
+						if (s.matches("[0-9]+")) {
+							lblResult_1.setText("Result: " + resultMetaData.getColumnType(Integer.parseInt(s)));
+						}
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
@@ -341,21 +420,15 @@ public class GuiClass {
 		frame.getContentPane().add(getColCount);
 		getColCount.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					lblResult_1.setText("Result: " + resultMetaData.getColumnCount());
-				} catch (SQLException ex) {
-					ex.printStackTrace();
+				if (resultMetaData != null) {
+					try {
+						lblResult_1.setText("Result: " + resultMetaData.getColumnCount());
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					} 
 				}
 			}
 		});
-
-		commandArea = new JTextArea();
-		commandArea.setBounds(10, 151, 237, 157);
-		frame.getContentPane().add(commandArea);
-		commandArea.setTabSize(5);
-		commandArea.setLineWrap(true);
-		commandArea.setFont(new Font("Courier New", Font.PLAIN, 13));
-		commandArea.setWrapStyleWord(true);
 	}
 
 	private void setDriverConnectionStatementStuff() {
@@ -364,7 +437,28 @@ public class GuiClass {
 		frame.getContentPane().add(btnCreateDriver);
 		btnCreateDriver.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver = new MyDriver();
+				try {
+					if(driver != null) {
+						if(connection != null) {
+							connection.close();
+							connection = null;
+							comCheck = null;
+						}
+						if(statement != null) {
+							statement.close();
+							statement = null;
+							commandArea.setEditable(false);
+						}
+						if(resultSet != null) {
+							resultSet.close();
+							resultSet = null;
+							resultMetaData = null;
+						}
+					}
+					driver = new MyDriver();
+				}catch(Exception ex) {
+					JOptionPane.showMessageDialog(null, "Can't create a driver!");
+				}
 			}
 		});
 
@@ -378,11 +472,20 @@ public class GuiClass {
 		frame.getContentPane().add(createConBtn);
 		createConBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Properties info = new Properties();
-				File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
-				info.put("path", dbDir.getAbsoluteFile());
 				try {
+					if(driver == null) {
+						JOptionPane.showMessageDialog(null, "Create a driver first!");
+						return;
+					}
+					if(connection != null) {
+						JOptionPane.showMessageDialog(null, "Close the current connection first!");
+						return;
+					}
+					Properties info = new Properties();
+					File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
+					info.put("path", dbDir.getAbsoluteFile());
 					connection = driver.connect("jdbc:xmldb://localhost", info);
+					comCheck = ((MyConnection)(connection)).cm;
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
@@ -395,7 +498,23 @@ public class GuiClass {
 		closeConBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					connection.close();
+					if((connection == null) || (driver == null)) {
+						JOptionPane.showMessageDialog(null, "No connection to close!");
+					}else {
+						connection.close();
+						connection = null;
+						if(statement != null) {
+							statement.close();
+							statement = null;
+							comCheck = null;
+							commandArea.setEditable(false);
+						}
+						if(resultSet != null) {
+							resultSet.close();
+							resultSet = null;
+							resultMetaData = null;
+						}
+					}
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
@@ -413,7 +532,15 @@ public class GuiClass {
 		createStmBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
+					if((connection == null) || (driver == null)) {
+						JOptionPane.showMessageDialog(null, "No connection to close!");
+					}
+					if(statement != null) {
+						JOptionPane.showMessageDialog(null, "Close the current statement first!");
+						return;
+					}
 					statement = connection.createStatement();
+					commandArea.setEditable(true);
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
@@ -426,7 +553,18 @@ public class GuiClass {
 		closeStmBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					statement.close();
+					if((connection == null) || (driver == null) || (statement == null)) {
+						JOptionPane.showMessageDialog(null, "No statement to close!");
+					}else {
+						statement.close();
+						statement = null;
+						commandArea.setEditable(false);
+						if(resultSet != null) {
+							resultSet.close();
+							resultSet = null;
+							resultMetaData = null;
+						}
+					}
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
@@ -441,10 +579,40 @@ public class GuiClass {
 		timeoutField.setColumns(10);
 
 		JButton btnSet = new JButton("Set");
+		btnSet.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(statement != null) {
+					try {
+						int time = (int) Double.parseDouble(timeoutField.getText());
+						if(time < 0) {
+							JOptionPane.showMessageDialog(null, "No negative allowed!");
+							return;
+						}else {
+							statement.setQueryTimeout(time);
+						}
+					}catch(Exception ex) {
+						JOptionPane.showMessageDialog(null, "Type mismatch!");
+					}
+				}
+			}
+		});
 		btnSet.setBounds(106, 447, 56, 23);
 		frame.getContentPane().add(btnSet);
 
 		JButton btnGet = new JButton("Get");
+		btnGet.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(statement != null) {
+					try {
+						timeoutField.setText("" + statement.getQueryTimeout());
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "No statement created!");
+				}
+			}
+		});
 		btnGet.setBounds(169, 447, 56, 23);
 		frame.getContentPane().add(btnGet);
 
@@ -454,11 +622,22 @@ public class GuiClass {
 		frame.getContentPane().add(lblTimeoutzeroFor);
 	}
 
-	private void setLabel() {
+	private void setupdaredRowslbl() {
 		updaredRowslbl = new JLabel("Number of updated rows: 0");
 		updaredRowslbl.setHorizontalAlignment(SwingConstants.CENTER);
 		updaredRowslbl.setBounds(0, 387, 240, 23);
 		frame.getContentPane().add(updaredRowslbl);
+	}
+	
+	private String getLastCommand() {
+		int count = document.length();
+		String oldDoc = document;
+		document = commandArea.getText().replaceAll("\n", "");
+		if(document.lastIndexOf(oldDoc, 0) != -1) {
+			return document.substring(count);
+		}else {
+			return document.substring(getCommandStartIndex(oldDoc));
+		}
 	}
 
 	private int getCommandStartIndex(String oldDoc) {
