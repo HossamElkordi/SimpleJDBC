@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import eg.edu.alexu.csd.oop.db.cs24.CommandChecker;
+import javax.swing.JCheckBox;
 
 public class GuiClass {
 
@@ -130,6 +131,11 @@ public class GuiClass {
 		scrollPane.setBounds(10, 151, 237, 157);
 		frame.getContentPane().add(scrollPane);
 		
+		JCheckBox chckbxDropIfExists = new JCheckBox("Drop if exists");
+		chckbxDropIfExists.setSelected(true);
+		chckbxDropIfExists.setBounds(10, 121, 97, 23);
+		frame.getContentPane().add(chckbxDropIfExists);
+		
 		commandArea = new JTextArea();
 		scrollPane.setViewportView(commandArea);
 		commandArea.setTabSize(5);
@@ -144,6 +150,7 @@ public class GuiClass {
 				try {
 					if(statement != null) {
 						String sql = getLastCommand().toLowerCase();
+						comCheck.setDrop(chckbxDropIfExists.isSelected());
 						if(sql.contains("select")) {
 							resultSet = statement.executeQuery(sql);
 							resultMetaData = resultSet.getMetaData();
@@ -189,6 +196,7 @@ public class GuiClass {
 			public void actionPerformed(ActionEvent e) {
 				if(statement != null) {
 					try {
+						comCheck.setDrop(chckbxDropIfExists.isSelected());
 						int[] arr = statement.executeBatch();
 						updaredRowslbl.setText("Number of updated rows: " + arr.toString());
 					} catch (SQLException e1) {
@@ -464,11 +472,11 @@ public class GuiClass {
 
 		JLabel lblConnection = new JLabel("Connection:");
 		lblConnection.setHorizontalAlignment(SwingConstants.CENTER);
-		lblConnection.setBounds(10, 68, 65, 23);
+		lblConnection.setBounds(10, 59, 65, 23);
 		frame.getContentPane().add(lblConnection);
 
 		JButton createConBtn = new JButton("Create");
-		createConBtn.setBounds(90, 68, 72, 23);
+		createConBtn.setBounds(90, 59, 72, 23);
 		frame.getContentPane().add(createConBtn);
 		createConBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -493,7 +501,7 @@ public class GuiClass {
 		});
 
 		JButton closeConBtn = new JButton("Close");
-		closeConBtn.setBounds(169, 68, 72, 23);
+		closeConBtn.setBounds(169, 59, 72, 23);
 		frame.getContentPane().add(closeConBtn);
 		closeConBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -523,11 +531,11 @@ public class GuiClass {
 
 		JLabel lblStatement = new JLabel("Statement:");
 		lblStatement.setHorizontalAlignment(SwingConstants.CENTER);
-		lblStatement.setBounds(10, 102, 65, 23);
+		lblStatement.setBounds(10, 93, 65, 23);
 		frame.getContentPane().add(lblStatement);
 
 		JButton createStmBtn = new JButton("Create");
-		createStmBtn.setBounds(90, 102, 72, 23);
+		createStmBtn.setBounds(90, 93, 72, 23);
 		frame.getContentPane().add(createStmBtn);
 		createStmBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -548,7 +556,7 @@ public class GuiClass {
 		});
 
 		JButton closeStmBtn = new JButton("Close");
-		closeStmBtn.setBounds(169, 102, 72, 23);
+		closeStmBtn.setBounds(169, 93, 72, 23);
 		frame.getContentPane().add(closeStmBtn);
 		closeStmBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
