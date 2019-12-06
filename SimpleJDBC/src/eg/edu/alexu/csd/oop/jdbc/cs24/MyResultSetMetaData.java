@@ -52,7 +52,7 @@ public class MyResultSetMetaData implements ResultSetMetaData {
 	}
 	
 	public int getColumnType(int column) throws SQLException {
-		if(this.result!=null&&column>=this.columns.length&&column!=0){
+		if(this.result!=null&&column<=this.columns.length&&column>0){
 			logger.info("Getting column type");
 			if (int.class.isInstance(result[0][column-1])){return 4;}
 			else if(String.class.isInstance(result[0][column-1])){return 12;}
