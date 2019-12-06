@@ -198,7 +198,12 @@ public class GuiClass {
 					try {
 						comCheck.setDrop(chckbxDropIfExists.isSelected());
 						int[] arr = statement.executeBatch();
-						updaredRowslbl.setText("Number of updated rows: " + arr.toString());
+						String s = "{";
+						for (int i = 0; i < arr.length-1; i++) {
+							s += arr[i] + ", ";
+						}
+						s += arr[arr.length-1] + "}";
+						updaredRowslbl.setText("Number of updated rows: " + s);
 					} catch (SQLException e1) {
 						e1.printStackTrace();
 					}
@@ -490,7 +495,6 @@ public class GuiClass {
 						return;
 					}
 					Properties info = new Properties();
-//					File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
 					info.put("path", "");
 					connection = driver.connect("jdbc:xmldb://localhost", info);
 					comCheck = ((MyConnection)(connection)).cm;
