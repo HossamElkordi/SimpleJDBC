@@ -110,7 +110,7 @@ public class MyResultSet implements ResultSet {
 	public int getInt(int columnIndex) throws SQLException {
 		if(!opened||columnIndex<1||columnIndex>columns.length||result==null||cursor==0||cursor==result.length+1) {logger.severe("Couldn't get int of column index:"+columnIndex);throw new SQLException();}
 		logger.info("Getting int of column index:"+columnIndex);
-		if(int.class.isInstance(result[cursor-1][columnIndex-1])){return (int)result[cursor-1][columnIndex-1];}
+		if((result[cursor-1][columnIndex-1])instanceof Integer){return (int)result[cursor-1][columnIndex-1];}
 
 		return 0;
 	}
