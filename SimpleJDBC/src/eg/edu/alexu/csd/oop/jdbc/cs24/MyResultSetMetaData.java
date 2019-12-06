@@ -38,7 +38,7 @@ public class MyResultSetMetaData implements ResultSetMetaData {
 
 
 	public String getColumnName(int column) throws SQLException {
-		if(this.columns!=null&&column>=this.columns.length&&column!=0){
+		if(this.columns!=null&&column<=this.columns.length&&column>0){
 			logger.info("Getting column name");
 			return columns[column-1];
 		}
