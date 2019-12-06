@@ -26,8 +26,8 @@ public class MyDriver implements Driver {
 	public Connection connect(String url, Properties info) throws SQLException {
 		if(acceptsURL(url)) {
 		    logger.info("Connection established successfully !");
-		    String[] pathArr = info.get("path").toString().replace('\\', ' ').split(" ");
-			return new MyConnection(pathArr[pathArr.length-2] + System.getProperty("file.separator") + pathArr[pathArr.length-1]);
+		    String path = info.get("path").toString().replace(System.getProperty("user.dir"), "").substring(1);
+			return new MyConnection(path);
 		}
         logger.severe("Error establishing connection !");
 		return null;

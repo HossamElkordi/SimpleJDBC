@@ -3,7 +3,7 @@ package eg.edu.alexu.csd.oop.jdbc.cs24;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+//import java.io.File;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
@@ -482,8 +482,8 @@ public class GuiClass {
 						return;
 					}
 					Properties info = new Properties();
-					File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
-					info.put("path", dbDir.getAbsoluteFile());
+//					File dbDir = new File("sample" + System.getProperty("file.separator") + ((int)(Math.random() * 100000)));
+					info.put("path", "");
 					connection = driver.connect("jdbc:xmldb://localhost", info);
 					comCheck = ((MyConnection)(connection)).cm;
 				} catch (SQLException ex) {
