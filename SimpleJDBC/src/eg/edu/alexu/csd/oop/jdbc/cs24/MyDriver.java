@@ -26,6 +26,9 @@ public class MyDriver implements Driver {
 	public Connection connect(String url, Properties info) throws SQLException {
 		if(acceptsURL(url)) {
 		    logger.info("Connection established successfully !");
+		    if(info.get("path").toString().length() == 0) {
+		    	return new MyConnection(info.get("path").toString());
+		    }
 		    String path = info.get("path").toString().replace(System.getProperty("user.dir"), "").substring(1);
 			return new MyConnection(path);
 		}
